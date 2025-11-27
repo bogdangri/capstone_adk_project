@@ -1,0 +1,33 @@
+version: "3.8"
+
+# This docker‑compose file defines a PostgreSQL database 
+# The PostgreSQL service exposes a data volume for
+# persistent storage and mounts an initialization script stored in
+# this repository. 
+
+services:
+  # Postgres 15 with pgvector preinstalled
+  db:
+    image: pgvector/pgvector:pg15
+    container_name: postgres_vector
+    restart: unless-stopped
+    environment:
+     # Credentials for the default PostgreSQL user and database.  You
+     # can change these values if you need different names.  Make
+     # sure to update the matching environment variables in the n8n
+     # service below.
+      POSTGRES_USER: db_user
+      POSTGRES_PASSWORD: db_password
+      POSTGRES_DB: adk_db
+    volumes:
+       # Persist database files between container restarts
+      - postgres_vec_data_adk:/var/lib/postgresql/data
+       # Execute our initialization script on first start
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      # Expose the database on the host at port 5434,  avoid conflict with your existing 5432
+      - "5434:5432"
+
+# Declare persistent named volumes used by the services
+volumes:
+  postgres_vec_data_adk:
